@@ -1,0 +1,161 @@
+version: "3.8"
+services:
+  linuxgsm-q3-bind:
+    image: gameservermanagers/gameserver:q3
+    container_name: q3server
+    restart: unless-stopped
+    #volumes:
+    # - /home/gameserver/G4NSERVERS/cs/q3server.cfg:/data/serverfiles/baseq3/q3server.cfg:ro
+    network_mode: host
+
+  ges:
+    container_name: ges
+    image: lacledeslan/gamesvr-gesource
+    stdin_open: true
+    tty: true
+    network_mode: host
+    volumes:
+      - /home/gameserver/G4NSERVERS/ges/server.cfg:/app/gesource/cfg/server.cfg
+    command: ./srcds_run -game gesource +map ge_bunker sv_lan 1 +maxplayers 20 +port 26900
+    restart: unless-stopped
+
+  svencoop:
+    container_name: svencoop
+    image: eyeliquid/g4nsvencoop
+    stdin_open: true
+    tty: true
+    network_mode: host
+    volumes:
+      - /home/gameserver/svencoop/map:/app/svencoop_addon
+    command: ./svends_run -num-edicts 3072 +maxplayers '30' +port 27015
+    restart: unless-stopped
+
+  hldm:
+    container_name: hldm
+    image: eyeliquid/g4nhldm
+    stdin_open: true
+    tty: true
+    network_mode: host
+    volumes:
+      - /home/gameserver/G4NSERVERS/hl/users.ini:/app/valve/addons/amxmodx/configs/users.ini
+    command: ./hlds_run -game valve +sv_lan 1 +map snark_pit +maxplayers 30 +port 26901
+    restart: unless-stopped
+
+  hl2dm:
+    container_name: hl2dm
+    image: eyeliquid/g4nhl2
+    stdin_open: true
+    tty: true
+    network_mode: host
+    volumes:
+      - /home/gameserver/G4NSERVERS/hl2dm/admins.cfg:/app/hl2mp/addons/sourcemod/configs/admins.cfg
+    command: ./srcds_run -debug -game hl2mp +map dm_lockdown +maxplayers 30 -console -usercon +port 26902
+    restart: unless-stopped
+
+  hldms:
+    container_name: hldms
+    image: lacledeslan/gamesvr-hldms-freeplay
+    stdin_open: true
+    tty: true
+    network_mode: host
+    volumes:
+      - /home/gameserver/G4NSERVERS/hl2dm/admins.cfg:/app/hl1mp/addons/sourcemod/configs/admins.cfg
+      - /home/gameserver/G4NSERVERS/hls/server.cfg:/app/hl1mp/cfg/server.cfg
+    command: ./srcds_run -debug -game hl1mp +map crossfire +maxplayers 30 -console -usercon +port 26903
+    restart: unless-stopped
+
+  ut99-server:
+    image: roemer/ut99-server:latest
+    container_name: ut99
+    restart: unless-stopped
+    volumes:
+      - ut99-data:/ut-data
+    ports:
+      # Webadmin
+      - 5580:5580/tcp
+      # Game Play
+      - 7777:7777/udp
+      # Server Querying
+      - 7778:7778/udp
+      - 7779:7779/udp
+      - 7780:7780/udp
+      - 7781:7781/udp
+      # LAN Discovery
+      - 8777:8777/udp
+      # Server Announcement
+      - 27500:27500/tcp
+      - 27500:27500/udp
+      - 27900:27900/tcp
+      - 27900:27900/udp
+    environment:
+      - UT_SERVERURL="CTF-Face?game=BotPack.CTFGame?mutator=BotPack.InstaGibDM,MVES.MapVote,FlagAnnouncementsV2.FlagAnnouncements"
+      - UT_SERVERNAME="UT TOERNAMENT"
+      - UT_ADMINNAME="UTAdmin"
+      - UT_ADMINEMAIL="no@one.com"
+      - UT_MOTD1="LEKKER UTEN"
+      - UT_ADMINPWD="admin"
+      - UT_WEBADMINUSER="admin"
+      - UT_WEBADMINPWD="admin"
+      - UT_MINPLAYERS_DM=4
+      - UT_MINPLAYERS_CTF=8
+      - UT_INITIALBOTS_DM=4
+      - UT_INITIALBOTS_CTF=8
+
+  swarm:
+    image: mithrand0/reactive-drop-linux-server:latest
+    environment:
+      - "port=27018"
+      - "maxplayers=8"
+      - "rd_hostname=ALien swarm Reactive"
+      - "rd_rcon_password=swarmtest"
+      - "wine_fastsync=1"
+    restart: unless-stopped
+    ports:
+      - "27018:27018/tcp"
+      - "27018:27018/udp"
+    volumes:
+      - "/dev/winesync:/dev/winesync"
+      - "reactivedrop:/usr/lib/games/reactivedrop"
+
+  linuxgsm-ut2k4-volume:
+    image: gameservermanagers/gameserver:ut2k4
+    # image: ghcr.io/gameservermanagers/gameserver:ut2k4
+    container_name: ut2k4server
+    restart: unless-stopped
+    volumes:
+      - linuxgsm-ut2k4:/data
+    network_mode: host
+    stdin_open: true
+    tty: true
+    ports:
+      - '7782:7782/udp'
+      - '6778:7778/udp'
+
+  MC:
+    container_name: mc
+    image: itzg/minecraft-server
+    restart: unless-stopped
+    environment:
+      EULA: "true"
+      USE_AIKAR_FLAGS: "true"
+      TYPE: VANILLA
+      VERSION: "1.20.2"
+      MEMORY: 4G
+      ENABLE_RCON: "true"
+      RCON_PORT: 25575
+      MAX_PLAYERS: 50
+      MAX_TICK_TIME: 60000
+      ONLINE_MODE: "false"
+      ALLOW_FLIGHT: "true"
+    stdin_open: true
+    tty: true
+    ports:
+      - "25565:25565"
+      - "8123:8123"
+    volumes:
+      - ~/minecraft/data:/data
+
+volumes:
+  ut99-data:
+  reactivedrop:
+  linuxgsm-ut2k4:
