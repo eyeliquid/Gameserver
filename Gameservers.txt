@@ -1,6 +1,4 @@
 Docker image verbeteren
-volumes aanpassen naar juiste map
 Volumes voor nieuwe gamemappen instellen(linken naar folder waar de mappen in staan, uitzoeken waar die in de image moeten komen te staan)
 Onafhankelijkheden van andere images verminderen
-
 cs1.6 no steam dedicated server(nu alleen via de game zelf op te starten. Docker image zien te vinden)
